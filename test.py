@@ -1,4 +1,5 @@
 # python code
+#new
 def hello():
     print("Hello, world!")
 
