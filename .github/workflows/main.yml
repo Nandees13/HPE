@@ -1,4 +1,4 @@
-name: CodeLlama Code Reviewer
+name: Gemini Code Reviewer
 
 on:
   pull_request:
@@ -23,8 +23,8 @@ jobs:
       - name: Install Dependencies
         run: npm install axios @octokit/rest
 
-      - name: Run CodeLlama Review
+      - name: Run Gemini Review
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OLLAMA_ADDRESS: ${{ secrets.OLLAMA_ADDRESS }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: node review.js
