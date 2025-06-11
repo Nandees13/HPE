@@ -1,15 +1,14 @@
 const axios = require('axios');
 const { Octokit } = require('@octokit/rest');
-const { execSync } = require('child_process');
 
 // GitHub setup
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
 const pullRequestNumber = process.env.GITHUB_REF.split('/')[2];
 
-// Ollama setup
-const ollamaAddress = process.env.OLLAMA_ADDRESS || 'http://localhost:11434';
-const ollamaModel = 'codellama:7b';
+// Gemini setup
+const geminiApiKey = process.env.GEMINI_API_KEY;
+const geminiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
 // Function to get the pull request diff
 async function getPullRequestDiff() {
@@ -29,19 +28,31 @@ async function getPullRequestDiff() {
   }
 }
 
-// Function to get CodeLlama review
-async function getCodeLlamaReview(diff) {
+// Function to get Gemini review
+async function getGeminiReview(diff) {
   try {
     const prompt = `Review the following code diff and provide detailed feedback on potential issues, best practices, and improvements:\n\n${diff}`;
-    const response = await axios.post(`${ollamaAddress}/api/generate`, {
-      model: ollamaModel,
-      prompt: prompt,
-      stream: false,
-    });
+    const response = await axios.post(
+      `${geminiEndpoint}?key=${geminiApiKey}`,
+      {
+        contents: [
+          {
+            parts: [
+              { text: prompt }
+            ]
+          }
+        ]
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
 
-    return response.data.response || 'No feedback generated.';
+    return response.data.candidates[0].content.parts[0].text || 'No feedback generated.';
   } catch (error) {
-    console.error('Error calling Ollama:', error.message);
+    console.error('Error calling Gemini API:', error.message);
     process.exit(1);
   }
 }
@@ -53,7 +64,7 @@ async function postReviewComment(review) {
       owner,
       repo,
       issue_number: pullRequestNumber,
-      body: `**CodeLlama Review**\n\n${review}`,
+      body: `**Gemini Review**\n\n${review}`,
     });
     console.log('Review comment posted successfully.');
   } catch (error) {
@@ -90,8 +101,8 @@ async function postReviewComment(review) {
       return;
     }
 
-    // Get review from CodeLlama
-    const review = await getCodeLlamaReview(filteredDiff);
+    // Get review from Gemini
+    const review = await getGeminiReview(filteredDiff);
 
     // Post the review as a comment
     await postReviewComment(review);
