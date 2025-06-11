@@ -1,5 +1,3 @@
-# python code
-
 def hello():
     print("Hello, world!")
 
