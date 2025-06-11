@@ -1,5 +1,5 @@
 # python code
-
+#fast
 def hello():
     print("Hello, world!")
 
