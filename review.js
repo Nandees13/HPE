@@ -1,6 +1,4 @@
 const axios = require('axios');
-
-// GitHub setup (dynamic import for @octokit/rest)
 let Octokit;
 (async () => {
   const { Octokit: OctokitModule } = await import('@octokit/rest');
