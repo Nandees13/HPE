@@ -1,12 +1,13 @@
-# new branch
-name: AI Code Reviewer
+name: Gemini Code Reviewer
 
 on:
   pull_request:
     types:
       - opened
       - synchronize
+
 permissions: write-all
+
 jobs:
   review:
     runs-on: ubuntu-latest
@@ -14,10 +15,16 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: AI Code Reviewer
-        uses: Nandees13/ai-code-reviewer@main
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
+          node-version: '16'
+
+      - name: Install Dependencies
+        run: npm install axios @octokit/rest
+
+      - name: Run Gemini Review
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_API_MODEL: "gpt-4" # Optional: defaults to "gpt-4"
-          exclude: "**/*.json, **/*.md" # Optional: exclude patterns separated by commas
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node review.js
