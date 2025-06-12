@@ -1,4 +1,5 @@
 const axios = require('axios');
+const fetch = require('node-fetch');
 
 const geminiApiKey = process.env.GEMINI_API_KEY;
 const geminiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
@@ -8,7 +9,7 @@ const geminiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/
   const { Octokit } = await import('@octokit/rest');
 
   // 2. GitHub setup
-  const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+  const octokit = new Octokit({auth: process.env.GITHUB_TOKEN,request: { fetch } });  
   const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
   const pullRequestNumber = process.env.GITHUB_REF.split('/')[2];
 
