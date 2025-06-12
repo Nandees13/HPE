@@ -1,7 +1,13 @@
 const axios = require('axios');
-const { Octokit } = require('@octokit/rest');
 
-// GitHub setup
+// GitHub setup (dynamic import for @octokit/rest)
+let Octokit;
+(async () => {
+  const { Octokit: OctokitModule } = await import('@octokit/rest');
+  Octokit = OctokitModule;
+})();
+
+// GitHub environment variables
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
 const pullRequestNumber = process.env.GITHUB_REF.split('/')[2];
@@ -76,10 +82,15 @@ async function postReviewComment(review) {
 // Main function
 (async () => {
   try {
+    // Ensure Octokit is loaded before proceeding
+    if (!Octokit) {
+      await new Promise(resolve => setTimeout(resolve, 100)); // Wait for Octokit import
+    }
+
     // Get the diff
     const diff = await getPullRequestDiff();
 
-    // Exclude patterns (similar to your previous setup)
+    // Exclude patterns
     const excludePatterns = ['**/*.json', '**/*.md'];
     const diffLines = diff.split('\n');
     const filteredDiff = diffLines
